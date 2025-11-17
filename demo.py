@@ -1,7 +1,3 @@
-"""
-Quick Demo Script - Run this to test your data!
-"""
-
 import sys
 sys.path.append('.')
 
@@ -15,8 +11,7 @@ def main():
     print("LOGIN ANOMALY DETECTION DEMO")
     print("="*70 + "\n")
     
-    # PUT YOUR EXCEL FILENAME HERE
-    DATA_FILE = 'CybersecurityIntrusionData.csv'  # <-- CHANGE THIS TO YOUR FILE
+    DATA_FILE = 'CybersecurityIntrusionData.csv'  # Dataset
     
     print(f"Loading data from: {DATA_FILE}\n")
     
