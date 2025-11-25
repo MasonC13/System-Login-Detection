@@ -17,7 +17,6 @@ class AnomalyDetector:
         self.initialize_model()
         
     def initialize_model(self):
-        """Initialize the selected model"""
         if self.model_type == 'isolation_forest':
             self.model = IsolationForest(
                 contamination=self.contamination,
@@ -32,20 +31,17 @@ class AnomalyDetector:
             raise ValueError(f"Unknown model: {self.model_type}")
     
     def train(self, X_train):
-        """Train the anomaly detection model"""
         print(f"Training {self.model_type}...")
         self.model.fit(X_train)
         print("Training completed!")
         return self
     
     def predict(self, X):
-        """Predict anomalies (1 for anomaly, 0 for normal)"""
         predictions = self.model.predict(X)
         anomalies = (predictions == -1).astype(int)
         return anomalies
     
     def get_anomaly_scores(self, X):
-        """Get anomaly scores"""
         if hasattr(self.model, 'score_samples'):
             return self.model.score_samples(X)
         elif hasattr(self.model, 'decision_function'):
@@ -53,14 +49,12 @@ class AnomalyDetector:
         return None
     
     def save_model(self, filepath):
-        """Save trained model"""
         os.makedirs(os.path.dirname(filepath), exist_ok=True)
         with open(filepath, 'wb') as f:
             pickle.dump(self.model, f)
         print(f"Model saved: {filepath}")
     
     def load_model(self, filepath):
-        """Load trained model"""
         with open(filepath, 'rb') as f:
             self.model = pickle.load(f)
         print(f"Model loaded: {filepath}")
@@ -76,22 +70,18 @@ class SupervisedDetector:
         )
         
     def train(self, X_train, y_train):
-        """Train supervised model"""
         print("Training Random Forest...")
         self.model.fit(X_train, y_train)
         print("Training completed!")
         return self
     
     def predict(self, X):
-        """Predict attacks"""
         return self.model.predict(X)
     
     def predict_proba(self, X):
-        """Get prediction probabilities"""
         return self.model.predict_proba(X)[:, 1]
     
     def get_feature_importance(self, feature_names):
-        """Get feature importance scores"""
         importance_df = pd.DataFrame({
             'feature': feature_names,
             'importance': self.model.feature_importances_
@@ -103,7 +93,6 @@ class ModelEvaluator:
     
     @staticmethod
     def evaluate_predictions(y_true, y_pred, model_name="Model"):
-        """Evaluate predictions"""
         print(f"\n{'='*70}")
         print(f"EVALUATION RESULTS - {model_name}")
         print('='*70)

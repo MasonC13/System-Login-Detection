@@ -11,11 +11,11 @@ def main():
     print("LOGIN ANOMALY DETECTION DEMO")
     print("="*70 + "\n")
     
-    DATA_FILE = 'CybersecurityIntrusionData.csv'  # Dataset
+    DATA_FILE = 'CybersecurityIntrusionData.csv'  # Dataset file to read from
     
     print(f"Loading data from: {DATA_FILE}\n")
     
-    # Step 1: Preprocessing
+    # Preprocessor for training
     preprocessor = LoginDataPreprocessor()
     data = preprocessor.preprocess_pipeline(DATA_FILE, test_size=0.2)
     
@@ -24,17 +24,17 @@ def main():
     y_train = data['y_train']
     y_test = data['y_test']
     
-    # Step 2: Train Isolation Forest
+    # Train the Isolation Forest model
     print("\nTraining Isolation Forest...")
     contamination = 0.3  # Adjust: 0.1 = strict, 0.4 = lenient
     
     detector = AnomalyDetector('isolation_forest', contamination=contamination)
     detector.train(X_train)
     
-    # Step 3: Predict
+    # Predict based on Isolation Forest
     predictions = detector.predict(X_test)
     
-    # Step 4: Evaluate
+    # Evaluate results from Isolation Forest
     if y_test is not None:
         results = ModelEvaluator.evaluate_predictions(y_test, predictions, "Isolation Forest")
         
@@ -51,7 +51,7 @@ def main():
         anomaly_count = predictions.sum()
         print(f"\nAnomalies detected: {anomaly_count}/{len(predictions)}")
     
-    # Step 5: Train supervised baseline
+    # Train supervised baseline for comparison
     if y_train is not None:
         print("\nTraining Random Forest...")
         supervised = SupervisedDetector()
@@ -60,13 +60,13 @@ def main():
         
         sup_results = ModelEvaluator.evaluate_predictions(y_test, sup_pred, "Random Forest")
         
-        # Feature importance
+        # Feature importance based on results
         importance_df = supervised.get_feature_importance(data['feature_columns'])
         print(f"\nTop 5 Most Important Features:")
         for idx, row in importance_df.head(5).iterrows():
             print(f"  {idx+1}. {row['feature']}: {row['importance']:.4f}")
         
-        # Comparison
+        # Comparison between Isolation and Random Forest models
         print(f"\nModel Comparison:")
         comparison = pd.DataFrame({
             'Isolation Forest': results,
@@ -74,7 +74,7 @@ def main():
         }).T
         print(comparison[['accuracy', 'precision', 'recall', 'f1']])
     
-    # Save model
+    # Save model data
     detector.save_model('./trained_model.pkl')
     
     print(f"\n" + "="*70)

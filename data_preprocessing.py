@@ -14,7 +14,6 @@ class LoginDataPreprocessor:
         self.feature_columns = []
         
     def load_data(self, filepath):
-        """Load login data from CSV or Excel file"""
         if filepath.endswith('.csv'):
             df = pd.read_csv(filepath)
         elif filepath.endswith(('.xlsx', '.xls')):
@@ -22,7 +21,7 @@ class LoginDataPreprocessor:
         else:
             raise ValueError("Unsupported file format. Use CSV or Excel.")
         
-        # Handle missing values
+        # Error handling for possible missing values
         categorical_cols = df.select_dtypes(include=['object']).columns
         for col in categorical_cols:
             if 'id' not in col.lower():
@@ -36,7 +35,6 @@ class LoginDataPreprocessor:
         return df
     
     def explore_data(self, df):
-        """Generate data exploration statistics"""
         print("\n=== DATA OVERVIEW ===")
         print(df.info())
         print("\n=== STATISTICAL SUMMARY ===")
@@ -50,10 +48,9 @@ class LoginDataPreprocessor:
         return df
     
     def engineer_features(self, df):
-        """Create additional features"""
         df_copy = df.copy()
         
-        # Risk score
+        # Risk score multiplier calculation
         df_copy['risk_score'] = (
             df_copy['failed_logins'] * 0.3 +
             df_copy['login_attempts'] * 0.2 +
@@ -61,21 +58,20 @@ class LoginDataPreprocessor:
             (1 - df_copy['ip_reputation_score']) * 0.2
         )
         
-        # High risk flag
+        # High risk flag marker threshold
         df_copy['high_risk'] = (df_copy['risk_score'] > df_copy['risk_score'].quantile(0.75)).astype(int)
         
-        # Encryption strength
+        # Encryption strength based on type
         encryption_map = {'None': 0, 'Unknown': 0, 'DES': 1, 'AES': 2}
         df_copy['encryption_strength'] = df_copy['encryption_used'].map(encryption_map).fillna(0)
         
-        # Suspicious browser
+        # Suspicious browser flag
         df_copy['suspicious_browser'] = (df_copy['browser_type'] == 'Unknown').astype(int)
         
         print(f"Features engineered: {df_copy.shape}")
         return df_copy
     
     def encode_categorical(self, df, categorical_columns):
-        """Encode categorical variables"""
         df_copy = df.copy()
         
         for col in categorical_columns:
@@ -88,10 +84,9 @@ class LoginDataPreprocessor:
         return df_copy
     
     def prepare_features(self, df, target_column='attack_detected'):
-        """Prepare feature matrix and target vector"""
         df_copy = df.copy()
         
-        # Exclude columns
+        # Exclude columns not being used as features
         exclude_cols = ['session_id', target_column, 'encryption_used', 'browser_type', 'protocol_type']
         self.feature_columns = [col for col in df_copy.columns if col not in exclude_cols]
         
@@ -102,7 +97,6 @@ class LoginDataPreprocessor:
         return X, y
     
     def scale_features(self, X_train, X_test=None):
-        """Scale features"""
         X_train = X_train.fillna(0)
         X_train_scaled = self.scaler.fit_transform(X_train)
         X_train_scaled = pd.DataFrame(X_train_scaled, columns=X_train.columns, index=X_train.index)
@@ -116,7 +110,6 @@ class LoginDataPreprocessor:
         return X_train_scaled
     
     def preprocess_pipeline(self, filepath, test_size=0.2):
-        """Complete preprocessing pipeline"""
         print("\n" + "="*70)
         print("STARTING DATA PREPROCESSING")
         print("="*70)
